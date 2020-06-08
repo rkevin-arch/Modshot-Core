@@ -1,6 +1,6 @@
-# mkxp-oneshot
+# OSFM CORE
 
-This is a specialized fork of [mkxp by Ancurio](https://github.com/Ancurio/mkxp) designed for [*OneShot*](http://oneshot-game.com/).
+This is a fork of a specialized fork of [mkxp by Ancurio](https://github.com/Ancurio/mkxp) designed for [*OneShot*](http://oneshot-game.com/). made for OSFM.
 
 Thanks to [hunternet93](https://github.com/hunternet93) for starting the reimplementation of the journal program!
 
