@@ -88,3 +88,12 @@ All option entries can alternatively be specified as command line options. Any o
 The syntax is: `--<option>=<value>`
 
 Example: `./oneshot --gameFolder="oneshot" --vsync=true`
+
+
+Features
+
+Custom scripts
+Discord richprescence
+GJ Api
+Dynamic window title
+And More
