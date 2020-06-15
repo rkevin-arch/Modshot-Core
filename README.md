@@ -92,8 +92,8 @@ Example: `./oneshot --gameFolder="oneshot" --vsync=true`
 
 Features
 
-Custom scripts
-Discord richprescence
-GJ Api
-Dynamic window title
-And More
+-Custom scripts
+-Discord richprescence
+-GJ Api
+-Dynamic window title
+-And More
