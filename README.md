@@ -1,6 +1,6 @@
-# mkxp-oneshot
+Modshot core
 
-This is a specialized fork of [mkxp by Ancurio](https://github.com/Ancurio/mkxp) designed for [*OneShot*](http://oneshot-game.com/).
+This is a fork of a specialized fork of [mkxp by Ancurio](https://github.com/Ancurio/mkxp) designed for [*OneShot*](http://oneshot-game.com/). designed for oneshot mods.
 
 Thanks to [hunternet93](https://github.com/hunternet93) for starting the reimplementation of the journal program!
 
