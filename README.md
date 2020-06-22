@@ -8,7 +8,7 @@ Thanks to [hunternet93](https://github.com/hunternet93) for starting the reimple
 >
 > It is licensed under the GNU General Public License v2+.
 
-*SyngleChance* also makes use of [steamshim](https://hg.icculus.org/icculus/steamshim/) for GPL compliance while making use of Steamworks features. See LICENSE.steamshim.txt for details.
+*ModShot-Core* also makes use of [steamshim](https://hg.icculus.org/icculus/steamshim/) for GPL compliance while making use of Steamworks features. See LICENSE.steamshim.txt for details.
 
 ## Dependencies / Building
 
@@ -34,7 +34,7 @@ Thanks to [hunternet93](https://github.com/hunternet93) for starting the reimple
 * PyQt5 for Python 3 (journal reimplementation only)
 * Steamworks SDK (optional, place contents of sdk folder in ZIP into "steamworks" folder in root)
 
-### Building with QMake
+### Building with QMake (Legacy)
 
 The `make-oneshot-mac.command` and `make-oneshot-linux.sh` files automate the entire process for you.  Just run the applicable file to compile and install the engine into OneShot's default Steam directory.
 
@@ -42,50 +42,87 @@ qmake will use pkg-config to locate the respective include/library paths. If you
 
 The exception is boost, which is weird in that it still hasn't managed to pull off pkg-config support (seriously?). *If you installed boost in a non-standard prefix*, you will need to pass its include path via `BOOST_I` and library path via `BOOST_L`, either as direct arguments to qmake (`qmake BOOST_I="/usr/include" ...`) or via environment variables. You can specify a library suffix (eg. "-mt") via `BOOST_LIB_SUFFIX` if needed.
 
-By default, *SyngleChance* switches into the directory where its binary is contained and then starts reading the configuration and resolving relative paths. In case this is undesired (eg. when the binary is to be installed to a system global, read-only location), it can be turned off by adding `DEFINES+=WORKDIR_CURRENT` to qmake's arguments.
+By default, *ModShot-Core* switches into the directory where its binary is contained and then starts reading the configuration and resolving relative paths. In case this is undesired (eg. when the binary is to be installed to a system global, read-only location), it can be turned off by adding `DEFINES+=WORKDIR_CURRENT` to qmake's arguments.
 
 pkg-config will look for `ruby-2.3.pc`, but you can override the version with `MRIVERSION=2.5` ('2.5' being an example). This is the default binding, so no arguments to qmake needed (`BINDING=MRI` to be explicit).
 
-### Building with Conan (Supported on Windows, in progress on macOS/Linux)
+### Building with QMake and Docker for Linux (Legacy)
 
-*SyngleChance* used to employ the `qmake` build system, but is now migrating to `conan`, so you'll need to install that beforehand.  You'll also want to add the following remotes to `conan`:
+See https://gist.github.com/rkevin-arch/eeb147ef4d99a9023465a68e53fc34e0
+
+### Building with Conan
+
+Preface: This only supports Visual Studio on Windows and Xcode on macOS. Ubuntu should work with either GCC or clang. You can probably compile with other platforms/setups, but beware.
+
+With Python 3 and pip installed, install Conan via `pip3 install conan`. Afterwards, add the necessary package repositories by adding running the following commands:
 
 ```sh
 conan remote add eliza "https://api.bintray.com/conan/eliza/conan"
-conan remote add gooborg "https://api.bintray.com/conan/gooborgstudios/conan"
 conan remote add bincrafters "https://api.bintray.com/conan/bincrafters/public-conan"
 ```
 
-On Windows, you may need to edit `C:\Users\[username]\.conan\profiles\default` and add the following line in `[settings]` ("v141" is the current toolset version at the time of this writing):
+Prepare to build *OneShot* by installing the necessary dependencies with Conan.
 
 ```sh
-compiler.toolset=v141
+cd Modshot-Core
+mkdir build
+cd build
+conan install .. --build=missing
 ```
 
-Next, you can install all the required packages:
+Hopefully, this should complete without error. It may take quite a while to build all of the dependencies.
+
+On Ubuntu, make sure you install the necessary dependencies before building *OneShot* proper:
 
 ```sh
-conan install . --build=missing
+sudo apt install libgtk2.0-dev libxfconf-0-dev
 ```
 
 Finally, you can build the project by running the following:
 
 ```sh
-conan build .
+conan build ..
 ```
 
-### Supported image/audio formats
-These depend on the SDL auxiliary libraries. *SyngleChance* only makes use of bmp/png for images and oggvorbis/wav for audio.
+On Linux, you likely want to generate an AppImage. Please refer to how to build the Journal app below, as this is a prerequisite for building the AppImage. Afterwards, you may run the command, from the root directory of the repository:
 
-To run *SyngleChance*, you should have a graphics card capable of at least **OpenGL (ES) 2.0** with an up-to-date driver installed.
+```sh
+./make-appimage.sh . build /path/to/game/files /path/to/journal/_______ /some/path/OneShot.AppImage`
+```
+
+Requires [linuxdeploy](https://github.com/linuxdeploy/linuxdeploy) and [AppImageTool](https://github.com/AppImage/AppImageKit) in your `PATH`.
+
+## Building the Journal app on Unix systems
+
+As a prerequisite on Ubuntu, ensure that the following packages are installed.
+
+```sh
+sudo apt install python3-venv libxcb-xinerama
+```
+
+Then run the script. From the root of the repository:
+
+```sh
+./make-journal-linux.sh . /path/to/journal/parent/directory/
+```
+
+This will generate a file called `_______`.
+
+### Building with Conan and Docker on Linux
+
+In progress. If no work has been done on it in a week, find @rkevin-arch and hunt him down with a chainsaw.
+
+### Supported image/audio formats
+These depend on the SDL auxiliary libraries. *ModShot-Core* only makes use of bmp/png for images and oggvorbis/wav for audio.
+
+To run *ModShot-Core*, you should have a graphics card capable of at least **OpenGL (ES) 2.0** with an up-to-date driver installed.
 
 ## Configuration
 
-*SyngleChance* reads configuration data from the file "oneshot.conf". The format is ini-style. Do *not* use quotes around file paths (spaces won't break). Lines starting with '#' are comments. See 'oneshot.conf.sample' for a list of accepted entries.
+*ModShot-Core* reads configuration data from the file "oneshot.conf". The format is ini-style. Do *not* use quotes around file paths (spaces won't break). Lines starting with '#' are comments. See 'oneshot.conf.sample' for a list of accepted entries.
 
 All option entries can alternatively be specified as command line options. Any options that are not arrays (eg. preloaded scripts) specified as command line options will override entries in oneshot.conf. Note that you will have to wrap values containing spaces in quotes (unlike in oneshot.conf).
 
 The syntax is: `--<option>=<value>`
 
 Example: `./oneshot --gameFolder="oneshot" --vsync=true`
-
