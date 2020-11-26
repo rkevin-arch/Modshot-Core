@@ -10,9 +10,9 @@ jobs:
       - name: Pull down build container
         run: docker pull rkevin/build-oneshot-windows
       - name: Build ModShot
-        run: docker run --rm -v "${{ github.workspace }}:C:\work\src" -v "${{ runner.temp }}\dist:C:\work\dist" --entrypoint cmd rkevin/build-oneshot-windows:latest "mkdir C:\work\build && cd \work\build && conan install \work\src --build=missing && conan build \work\src && robocopy C:\work\build\bin C:\work\dist && echo Modshot build success."
+        run: docker run --rm -v "${{ github.workspace }}:C:\work\src" -v "${{ runner.temp }}:C:\work\dist" --entrypoint cmd rkevin/build-oneshot-windows:latest "mkdir C:\work\build && cd \work\build && conan install \work\src --build=missing && conan build \work\src && robocopy C:\work\build\bin C:\work\dist && echo Modshot build success."
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
           name: modshot_build_windows_latest
-          path: ${{ runner.temp }}\dist
+          path: ${{ runner.temp }}
