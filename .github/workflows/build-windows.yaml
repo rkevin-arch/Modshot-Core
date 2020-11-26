@@ -14,5 +14,5 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
-          name: modshot_build_windows_${{ github.sha::8 }}
+          name: modshot_build_windows_${{ github.sha }}
           path: ${{ runner.temp }}\dist
