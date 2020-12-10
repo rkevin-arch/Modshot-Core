@@ -18,7 +18,8 @@ jobs:
         with:
           cached: ${{ steps.cache-qt.outputs.cache-hit }}
       - name: Compile Journal
-        run: qmake
+        shell: cmd
+        run: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat && qmake
         working-directory: ${{ github.workspace }}\journal
       - name: Upload artifact
         uses: actions/upload-artifact@v2
