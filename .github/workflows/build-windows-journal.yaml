@@ -1,4 +1,4 @@
-name: build-windows-baremetal
+name: build-windows-journal
 on: push
 jobs:
   build-windows:
