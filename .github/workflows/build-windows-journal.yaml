@@ -25,6 +25,7 @@ jobs:
         uses: svenstaro/upx-action@v2
         with:
           file: ${{ github.workspace }}\journal\release\journal.exe
+          args: --best
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
