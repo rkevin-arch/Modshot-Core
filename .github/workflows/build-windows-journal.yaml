@@ -1,0 +1,27 @@
+name: build-windows-baremetal
+on: push
+jobs:
+  build-windows:
+    name: Build Journal (_______.exe) for Windows
+    runs-on: windows-2019
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Cache Qt
+        id: cache-qt
+        uses: actions/cache@v1
+        with:
+          path: ../Qt
+          key: ${{ runner.os }}-QtCache
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v2
+        with:
+          cached: ${{ steps.cache-qt.outputs.cache-hit }}
+      - name: Compile Journal
+        run: qmake
+        working-directory: ${{ github.workspace }}\journal
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: modshot_build_windows_latest
+          path: ${{ github.workspace }}\journal
