@@ -1,5 +1,5 @@
-#define WINVER 0x0A00
-#define _WIN32_WINNT 0x0A00
+#define WINVER 0x0600
+#define _WIN32_WINNT 0x0600
 #include <windows.h>
 #include <stdio.h>
 #include <objbase.h>
