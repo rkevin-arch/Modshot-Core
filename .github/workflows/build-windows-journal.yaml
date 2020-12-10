@@ -24,7 +24,7 @@ jobs:
       - name: Compress Journal
         uses: svenstaro/upx-action@v2
         with:
-          ${{ github.workspace }}\journal\release\journal.exe
+          file: ${{ github.workspace }}\journal\release\journal.exe
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
