@@ -19,10 +19,10 @@ jobs:
           cached: ${{ steps.cache-qt.outputs.cache-hit }}
       - name: Compile Journal
         shell: cmd
-        run: '"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" amd64 && qmake'
+        run: '"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" amd64 && qmake && make'
         working-directory: ${{ github.workspace }}\journal
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
-          name: modshot_build_windows_latest
-          path: ${{ github.workspace }}\journal
+          name: modshot_windows_journal_${{ github.sha }}
+          path: ${{ github.workspace }}\journal\release
