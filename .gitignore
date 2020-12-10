@@ -4,7 +4,7 @@
 *.xxd
 *.exe
 *.app
-*.bmp
+#*.bmp
 *.lproj
 
 *.tmp
