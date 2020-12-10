@@ -21,8 +21,12 @@ jobs:
         shell: cmd
         run: '"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" amd64 && qmake && nmake'
         working-directory: ${{ github.workspace }}\journal
+      - name: Compress Journal
+        uses: svenstaro/upx-action@v2
+        with:
+          ${{ github.workspace }}\journal\release\journal.exe
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
-          name: modshot_windows_journal_${{ github.sha }}
-          path: ${{ github.workspace }}\journal\release
+          name: modshot_windows_journal_${{ github.sha }}.exe
+          path: ${{ github.workspace }}\journal\release\journal.exe
