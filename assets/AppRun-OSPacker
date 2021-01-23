@@ -1,0 +1,123 @@
+#!/bin/bash -e
+# OneShot Packer
+# This can be used as the AppRun in the created AppImage to make it patch an existing OneShot installation
+# The existing installation can either be the Steam version or the AppImage(itch.io) version.
+# Change the following two environment variables to change the name of your mod (only applies in this script)
+MOD_NAME='ModShot'
+MOD_EXECUTABLE='ModShot.AppImage'
+
+# Don't change the following two lines unless OneShot updates
+# These are checksums to make sure the user isn't patching your mod on top of an already modified OneShot
+ORIG_ONESHOT_APPIMAGE_MD5SUM='165fe1ea589d835b1dedc9947d43eb8f'
+ORIG_ONESHOT_STEAM_MD5SUM='f63b0bcf1f574735bbedb718db3e20e4'
+DEFAULT_ONESHOT_STEAM_DIR="$HOME/.steam/steam/steamapps/common/OneShot"
+
+echo "This program patches ${MOD_NAME} onto an existing version of OneShot."
+echo "If you have the itch.io version, please run this program using:"
+echo "  $ARGV0 path/to/original/OneShot.AppImage"
+echo "If you have the steam version and have it installed at a non-default path:"
+echo "  $ARGV0 path/to/installation/directory/OneShot"
+echo "Your original files will not be modified."
+echo
+
+if [ $# == 0 ]; then
+    if [ -d "$DEFAULT_ONESHOT_STEAM_DIR" ]; then
+        echo "Assuming steam installation at $DEFAULT_ONESHOT_STEAM_DIR..."
+        ORIG_LOCATION="$DEFAULT_ONESHOT_STEAM_DIR"
+    else
+        echo "No steam OneShot installation detected at the default location."
+        exit 1
+    fi
+else
+    ORIG_LOCATION="$1"
+fi
+
+TMPDIR=`mktemp -d`
+function atexit {
+    [ -n "$TMPDIR" ] && rm -rf "$TMPDIR"
+}
+trap atexit EXIT
+
+echo "Extracting original OneShot..."
+if [ -d "$ORIG_LOCATION" ]; then
+    cd "$ORIG_LOCATION"
+    if [ -z "$SKIP_CHECKSUM" -a "$(find Audio Data Fonts Graphics Languages Wallpaper -type f -exec md5sum '{}' \; | sort -k 2 | md5sum | head -c32)" != "$ORIG_ONESHOT_STEAM_MD5SUM" ]; then
+        echo "Checksum Mismatch!"
+        echo "This is not a OneShot installation directory, or it has been modified."
+        echo "Please don't apply this mod on an already modded version of OneShot!"
+        echo "You can uninstall / reinstall this game via Steam to fix this issue."
+        echo "You can also bypass this check using SKIP_CHECKSUM=1, but $MOD_NAME may not work."
+        exit 1
+    fi
+    mkdir "$TMPDIR/original"
+    cp -r Audio Data Fonts Graphics Languages Wallpaper "$TMPDIR/original/"
+    cd - >/dev/null
+elif [ -f "$ORIG_LOCATION" ]; then
+    if [ -z "$SKIP_CHECKSUM" -a "$(md5sum "$ORIG_LOCATION" | head -c32)" != "$ORIG_ONESHOT_APPIMAGE_MD5SUM" ]; then
+        echo "Checksum Mismatch!"
+        echo "This is not the original OneShot.Appimage."
+        echo "Please don't apply this mod on an already modded version of OneShot."
+        echo "You can redownload the game via itch.io to fix this issue."
+        echo "You can also bypass this check using SKIP_CHECKSUM=1, but $MOD_NAME may not work."
+        exit 1
+    fi
+    ORIG_LOCATION=$(realpath "$ORIG_LOCATION")
+    cd "$TMPDIR"
+    if [ ! -x "$ORIG_LOCATION" ]; then
+        ORIG_PERMS=$(stat -c '%a' $ORIG_LOCATION)
+        if ! chmod +x "$ORIG_LOCATION"; then
+            echo "The specified AppImage is not executable."
+            echo "Please make sure the AppImage is executable and run this program again."
+            exit 1
+        fi
+    else
+        ORIG_PERMS=""
+    fi
+    if ! "$ORIG_LOCATION" --appimage-extract >/dev/null; then
+        echo "Failed to unpack OneShot for unknown reasons."
+        exit 1
+    fi
+    if [ ! -z "$ORIG_PERMS" ]; then
+        chmod "$ORIG_PERMS" "$ORIG_LOCATION"
+    fi
+    mv squashfs-root/usr/bin original
+    rm -r squashfs-root
+    cd - >/dev/null
+else
+    echo "The file/folder you specified does not exist."
+    exit 1
+fi
+
+echo "Unpacking patch..."
+cd "$TMPDIR"
+if ! "$APPIMAGE" --appimage-extract >/dev/null; then
+    echo "Failed to unpack this patch for unknown reasons."
+    exit 1
+fi
+cp -nr original/* squashfs-root/usr/bin/
+cat <<"EOF" >squashfs-root/AppRun
+#!/bin/bash
+temp_gdk_loaders_cache="$(mktemp)"
+function atexit {
+  [ -n "$temp_gdk_loaders_cache" ] && rm -f "$temp_gdk_loaders_cache"
+}
+trap atexit EXIT
+
+appdir_lib_escaped="$(printf '%s\n' "$APPDIR/usr/lib" | sed -e 's/[\/&]/\\&/g')"
+sed "s,%RETARGET%,$appdir_lib_escaped," \
+    "$APPDIR/usr/lib/loaders.cache" > "$temp_gdk_loaders_cache"
+export GDK_PIXBUF_MODULE_FILE="$temp_gdk_loaders_cache"
+
+"$APPDIR/usr/bin/oneshot"
+EOF
+cd - >/dev/null
+
+echo "Packaging ${MOD_NAME}..."
+mv "$TMPDIR/squashfs-root/appimagetool.AppImage" "$TMPDIR/appimagetool.AppImage"
+if ! ARCH=x86_64 "$TMPDIR/appimagetool.AppImage" "$TMPDIR/squashfs-root/" "$MOD_EXECUTABLE"; then
+    echo "Failed to pack AppImage."
+    exit 1
+fi
+
+echo
+echo "Success! Run $MOD_EXECUTABLE and enjoy the game."
